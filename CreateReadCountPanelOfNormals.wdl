@@ -81,7 +81,7 @@ workflow callCreateReadCountPanelOfNormals {
         }
     }
 
-    File new_annotated_interval_list = select_first([
+    File tmp_annotated_interval_list = select_first([
         if defined(annotated_interval_list)
         then annotated_interval_list
         else AnnotateIntervals.annotated_interval_list
@@ -91,14 +91,14 @@ workflow callCreateReadCountPanelOfNormals {
 		input:
             input_counts = callCollectReadCounts.read_counts,
             output_name = pon_name,
-            annotated_interval_list = new_annotated_interval_list,
+            annotated_interval_list = tmp_annotated_interval_list,
             runtime_params = standard_runtime,
             memoryMB = create_panel_mem
 	}
 
     output {
         File pon = CreateReadCountPanelOfNormals.cnv_pon
-        File? annotated_interval_list = AnnotateIntervals.annotated_interval_list
+        File? new_annotated_interval_list = AnnotateIntervals.annotated_interval_list
     }
 }
 
@@ -117,11 +117,8 @@ task CreateReadCountPanelOfNormals {
     String output_pon = output_name + ".hdf5"
 
     parameter_meta {
-        interval_list: {localization_optional: true}
-        ref_fasta: {localization_optional: true}
-        ref_fasta_index: {localization_optional: true}
-        ref_dict: {localization_optional: true}
         input_counts: {localization_optional: true}
+        annotated_interval_list: {localization_optional: true}
     }
 
 	command <<<

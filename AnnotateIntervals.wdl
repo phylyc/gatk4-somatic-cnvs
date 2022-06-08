@@ -88,6 +88,8 @@ task AnnotateIntervals {
         ref_fasta: {localization_optional: true}
         ref_fasta_index: {localization_optional: true}
         ref_dict: {localization_optional: true}
+        mappability_track: {localization_optional: true}
+        segmental_duplication_track: {localization_optional: true}
     }
 
 	command <<<

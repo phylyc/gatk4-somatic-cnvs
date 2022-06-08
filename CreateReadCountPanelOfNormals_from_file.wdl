@@ -59,7 +59,7 @@ workflow callCreateReadCountPanelOfNormals_from_File {
     }
 
     output {
-        File pon = callCreateReadCountPanelOfNormals.cnv_pon
-        File? annotated_interval_list = callCreateReadCountPanelOfNormals.annotated_interval_list
+        File pon = callCreateReadCountPanelOfNormals.pon
+        File? new_annotated_interval_list = callCreateReadCountPanelOfNormals.new_annotated_interval_list
     }
 }
