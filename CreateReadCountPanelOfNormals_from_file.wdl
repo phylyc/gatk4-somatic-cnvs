@@ -1,7 +1,7 @@
 version development
 
 #import "CreateReadCountPanelOfNormals.wdl" as crcpon
-import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/master/CreateReadCountPanelOfNormals.wdl" as crcpon
+import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/CreateReadCountPanelOfNormals.wdl" as crcpon
 
 
 workflow callCreateReadCountPanelOfNormals_from_File {

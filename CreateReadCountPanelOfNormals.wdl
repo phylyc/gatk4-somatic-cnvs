@@ -2,8 +2,8 @@ version development
 
 #import "CollectReadCounts.wdl" as crc
 #import "AnnotateIntervals.wdl" as ai
-import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/master/CollectReadCounts.wdl" as crc
-import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/master/AnnotateIntervals.wdl" as ai
+import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/CollectReadCounts.wdl" as crc
+import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/AnnotateIntervals.wdl" as ai
 
 
 workflow callCreateReadCountPanelOfNormals {
