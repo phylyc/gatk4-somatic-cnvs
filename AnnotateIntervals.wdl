@@ -90,14 +90,14 @@ task AnnotateIntervals {
     String output_file = basename(interval_list, ".interval_list") + ".annotated.interval_list"
 
     parameter_meta {
-        interval_list: {localization_optional: true}
+#        interval_list: {localization_optional: true}
         ref_fasta: {localization_optional: true}
         ref_fasta_index: {localization_optional: true}
         ref_dict: {localization_optional: true}
-        mappability_track: {localization_optional: true}
-        mappability_track_idx: {localization_optional: true}
-        segmental_duplication_track: {localization_optional: true}
-        segmental_duplication_track_idx: {localization_optional: true}
+#        mappability_track: {localization_optional: true}
+#        mappability_track_idx: {localization_optional: true}
+#        segmental_duplication_track: {localization_optional: true}
+#        segmental_duplication_track_idx: {localization_optional: true}
     }
 
 	command <<<
