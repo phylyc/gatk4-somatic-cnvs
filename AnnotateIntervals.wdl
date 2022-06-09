@@ -21,7 +21,9 @@ workflow callAnnotateIntervals {
         File ref_dict
 
         File? mappability_track
+        File? mappability_track_idx
         File? segmental_duplication_track
+        File? segmental_duplication_track_idx
 
         # runtime
         String gatk_docker = "broadinstitute/gatk"
@@ -56,7 +58,9 @@ workflow callAnnotateIntervals {
             ref_fasta_index = ref_fasta_index,
             ref_dict = ref_dict,
             mappability_track = mappability_track,
+            mappability_track_idx = mappability_track_idx,
             segmental_duplication_track = segmental_duplication_track,
+            segmental_duplication_track_idx = segmental_duplication_track_idx,
             runtime_params = standard_runtime,
             memoryMB = annotate_intervals_mem
     }
@@ -75,7 +79,9 @@ task AnnotateIntervals {
         File ref_dict
 
         File? mappability_track
+        File? mappability_track_idx
         File? segmental_duplication_track
+        File? segmental_duplication_track_idx
 
         Runtime runtime_params
         Int? memoryMB = 512
@@ -89,7 +95,9 @@ task AnnotateIntervals {
         ref_fasta_index: {localization_optional: true}
         ref_dict: {localization_optional: true}
         mappability_track: {localization_optional: true}
+        mappability_track_idx: {localization_optional: true}
         segmental_duplication_track: {localization_optional: true}
+        segmental_duplication_track_idx: {localization_optional: true}
     }
 
 	command <<<
