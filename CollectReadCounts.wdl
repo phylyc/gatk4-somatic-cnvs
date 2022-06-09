@@ -23,6 +23,7 @@ workflow callCollectReadCounts {
 
         File bam
         File bai
+        String? sample_name
 
         String format = "TSV"
 
@@ -55,12 +56,16 @@ workflow callCollectReadCounts {
         "boot_disk_size": 12  # needs to be > 10
     }
 
-    call GetSampleName {
-        input:
-            bam = bam,
-            runtime_params = standard_runtime,
-            memoryMB = get_sample_name_mem
+    if (!defined(sample_name)) {
+        call GetSampleName {
+            input:
+                bam = bam,
+                runtime_params = standard_runtime,
+                memoryMB = get_sample_name_mem
+        }
     }
+
+    String this_sample_name = select_first([sample_name, GetSampleName.sample_name])
 
 	call CollectReadCounts {
 		input:
@@ -71,7 +76,7 @@ workflow callCollectReadCounts {
             bam = bam,
             bai = bai,
             format = format,
-            sample_name = GetSampleName.sample_name,
+            sample_name = this_sample_name,
             runtime_params = standard_runtime,
 	}
 
@@ -79,7 +84,7 @@ workflow callCollectReadCounts {
         call DenoiseReadCounts {
             input:
                 read_counts = CollectReadCounts.read_counts,
-                sample_name = GetSampleName.sample_name,
+                sample_name = this_sample_name,
                 annotated_interval_list = annotated_interval_list,
                 count_panel_of_normals = read_count_panel_of_normals,
                 runtime_params = standard_runtime,

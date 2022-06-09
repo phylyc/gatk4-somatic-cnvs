@@ -81,17 +81,15 @@ workflow callCreateReadCountPanelOfNormals {
         }
     }
 
-    File tmp_annotated_interval_list = select_first([
-        if defined(annotated_interval_list)
-        then annotated_interval_list
-        else AnnotateIntervals.annotated_interval_list
+    File this_annotated_interval_list = select_first([
+        annotated_interval_list, AnnotateIntervals.annotated_interval_list
     ])
 
 	call CreateReadCountPanelOfNormals {
 		input:
             input_counts = callCollectReadCounts.read_counts,
             output_name = pon_name,
-            annotated_interval_list = tmp_annotated_interval_list,
+            annotated_interval_list = this_annotated_interval_list,
             runtime_params = standard_runtime,
             memoryMB = create_panel_mem
 	}
