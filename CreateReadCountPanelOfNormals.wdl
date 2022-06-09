@@ -33,7 +33,7 @@ workflow callCreateReadCountPanelOfNormals {
         Int emergency_extra_diskGB = 0
 
         # memory assignments in MB
-        Int annotate_intervals_mem = 512
+        Int annotate_intervals_mem = 2048
         Int create_panel_mem = 8192
     }
 
@@ -89,8 +89,8 @@ workflow callCreateReadCountPanelOfNormals {
         annotated_interval_list, AnnotateIntervals.annotated_interval_list
     ])
 
-	call CreateReadCountPanelOfNormals {
-		input:
+    call CreateReadCountPanelOfNormals {
+        input:
             input_counts = callCollectReadCounts.read_counts,
             output_name = pon_name,
             annotated_interval_list = this_annotated_interval_list,
@@ -135,7 +135,7 @@ task CreateReadCountPanelOfNormals {
 	>>>
 
 	output {
-		File cnv_pon = output_pon
+        File cnv_pon = output_pon
 	}
 
     runtime {
