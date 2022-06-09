@@ -115,8 +115,8 @@ task CreateReadCountPanelOfNormals {
     String output_pon = output_name + ".hdf5"
 
     parameter_meta {
-        input_counts: {localization_optional: true}
-        annotated_interval_list: {localization_optional: true}
+#        input_counts: {localization_optional: true}
+#        annotated_interval_list: {localization_optional: true}
     }
 
 	command <<<
