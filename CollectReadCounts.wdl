@@ -93,7 +93,7 @@ workflow callCollectReadCounts {
 
     output {
         File read_counts = CollectReadCounts.read_counts
-        File? denoised_read_counts = DenoiseReadCounts.denoised_read_counts
+        File? denoised_copy_ratios = DenoiseReadCounts.denoised_copy_ratios
         File? standardized_copy_ratios = DenoiseReadCounts.standardized_copy_ratios
     }
 }
@@ -149,7 +149,7 @@ task CollectReadCounts {
         String format = "TSV"
 
         Runtime runtime_params
-        Int? memoryMB = 4096
+        Int? memoryMB = 2048
     }
 
     parameter_meta {
@@ -199,18 +199,17 @@ task DenoiseReadCounts {
         File? count_panel_of_normals
 
         Runtime runtime_params
-        Int? memoryMB = 4096
+        Int? memoryMB = 2048
     }
 
     parameter_meta {
-        read_counts: {localization_optional: true}
-        annotated_interval_list: {localization_optional: true}
-        count_panel_of_normals: {localization_optional: true}
+#        read_counts: {localization_optional: true}
+#        annotated_interval_list: {localization_optional: true}
+#        count_panel_of_normals: {localization_optional: true}
     }
 
-    String base_name = basename(read_counts, ".tsv")
-    String output_denoised_read_counts = base_name + "_denoised.tsv"
-    String output_standardized_copy_ratios = sample_name + "_standardized_copy_ratios.tsv"
+    String output_denoised_copy_ratios = sample_name + ".denoised_CR.tsv"
+    String output_standardized_copy_ratios = sample_name + ".standardized_CR.tsv"
 
 	command <<<
         set -e
@@ -218,14 +217,14 @@ task DenoiseReadCounts {
         gatk --java-options "-Xmx~{select_first([memoryMB, runtime_params.command_mem])}m" \
             DenoiseReadCounts \
             -I ~{read_counts} \
-            --denoised-copy-ratios ~{output_denoised_read_counts} \
+            --denoised-copy-ratios ~{output_denoised_copy_ratios} \
             --standardized-copy-ratios ~{output_standardized_copy_ratios} \
             ~{"--annotated-intervals " + annotated_interval_list} \
             ~{"--count-panel-of-normals " + count_panel_of_normals}
 	>>>
 
 	output {
-        File denoised_read_counts = output_denoised_read_counts
+        File denoised_copy_ratios = output_denoised_copy_ratios
         File standardized_copy_ratios = output_standardized_copy_ratios
 	}
 

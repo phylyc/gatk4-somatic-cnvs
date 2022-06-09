@@ -18,7 +18,9 @@ workflow callCreateReadCountPanelOfNormals_from_File {
 
         File? annotated_interval_list
         File? mappability_track
+        File? mappability_track_idx
         File? segmental_duplication_track
+        File? segmental_duplication_track_idx
 
         # runtime
         String gatk_docker = "broadinstitute/gatk"
@@ -46,7 +48,9 @@ workflow callCreateReadCountPanelOfNormals_from_File {
 
             annotated_interval_list = annotated_interval_list,
             mappability_track = mappability_track,
+            mappability_track_idx = mappability_track_idx,
             segmental_duplication_track = segmental_duplication_track,
+            segmental_duplication_track_idx = segmental_duplication_track_idx,
 
             gatk_docker = gatk_docker,
             gatk_override = gatk_override,

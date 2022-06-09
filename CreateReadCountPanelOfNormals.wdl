@@ -2,8 +2,8 @@ version development
 
 #import "CollectReadCounts.wdl" as crc
 #import "AnnotateIntervals.wdl" as ai
-import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/CollectReadCounts.wdl" as crc
 import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/AnnotateIntervals.wdl" as ai
+import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/CollectReadCounts.wdl" as crc
 
 
 workflow callCreateReadCountPanelOfNormals {
@@ -21,7 +21,9 @@ workflow callCreateReadCountPanelOfNormals {
         File? annotated_interval_list
         # If annotated_interval_list is specified, those args are ignored:
         File? mappability_track
+        File? mappability_track_idx
         File? segmental_duplication_track
+        File? segmental_duplication_track_idx
 
         # runtime
         String gatk_docker = "broadinstitute/gatk"
@@ -75,7 +77,9 @@ workflow callCreateReadCountPanelOfNormals {
                 ref_fasta_index = ref_fasta_index,
                 ref_dict = ref_dict,
                 mappability_track = mappability_track,
+                mappability_track_idx = mappability_track_idx,
                 segmental_duplication_track = segmental_duplication_track,
+                segmental_duplication_track_idx = segmental_duplication_track_idx,
                 runtime_params = standard_runtime,
                 memoryMB = annotate_intervals_mem
         }
