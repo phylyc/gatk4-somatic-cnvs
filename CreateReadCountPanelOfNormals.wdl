@@ -116,6 +116,9 @@ task CreateReadCountPanelOfNormals {
         Int? memoryMB = 8192
     }
 
+    Int input_size = ceil(size(input_counts, "GB"))
+    Int disk_size = runtime_params.disk + input_size
+
     String output_pon = output_name + ".hdf5"
 
     parameter_meta {
@@ -142,7 +145,7 @@ task CreateReadCountPanelOfNormals {
         docker: runtime_params.gatk_docker
         bootDiskSizeGb: runtime_params.boot_disk_size
         memory: select_first([memoryMB, runtime_params.machine_mem]) + " MB"
-        disks: "local-disk " + runtime_params.disk + " HDD"
+        disks: "local-disk " + disk_size + " HDD"
         preemptible: runtime_params.preemptible
         maxRetries: runtime_params.max_retries
         cpu: runtime_params.cpu
