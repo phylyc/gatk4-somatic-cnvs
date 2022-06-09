@@ -33,7 +33,7 @@ workflow callAnnotateIntervals {
         Int emergency_extra_diskGB = 0
 
         # memory assignments in MB
-        Int annotate_intervals_mem = 512
+        Int annotate_intervals_mem = 2048
     }
 
     Int gatk_override_size = if defined(gatk_override) then ceil(size(gatk_override, "GB")) else 0
@@ -84,7 +84,7 @@ task AnnotateIntervals {
         File? segmental_duplication_track_idx
 
         Runtime runtime_params
-        Int? memoryMB = 512
+        Int? memoryMB = 2048
     }
 
     String output_file = basename(interval_list, ".interval_list") + ".annotated.interval_list"
