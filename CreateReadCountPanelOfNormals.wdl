@@ -34,6 +34,7 @@ workflow callCreateReadCountPanelOfNormals {
 
         # memory assignments in MB
         Int annotate_intervals_mem = 2048
+        Int collect_read_counts_mem = 2048
         Int create_panel_mem = 8192
     }
 
@@ -65,7 +66,9 @@ workflow callCreateReadCountPanelOfNormals {
                 gatk_override = gatk_override,
                 gatk_docker = gatk_docker,
                 preemptible = preemptible,
-                max_retries = max_retries
+                max_retries = max_retries,
+                emergency_extra_diskGB = emergency_extra_diskGB,
+                collect_read_counts_mem = collect_read_counts_mem
         }
     }
 

@@ -31,6 +31,7 @@ workflow callCreateReadCountPanelOfNormals_from_File {
 
         # memory assignments in MB
         Int annotate_intervals_mem = 2048
+        Int collect_read_counts_mem = 2048
         Int create_panel_mem = 8192
     }
 
@@ -59,6 +60,7 @@ workflow callCreateReadCountPanelOfNormals_from_File {
 
             emergency_extra_diskGB = emergency_extra_diskGB,
             annotate_intervals_mem = annotate_intervals_mem,
+            collect_read_counts_mem = collect_read_counts_mem,
             create_panel_mem = create_panel_mem
     }
 

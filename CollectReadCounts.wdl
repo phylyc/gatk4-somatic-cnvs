@@ -39,6 +39,8 @@ workflow callCollectReadCounts {
 
         # memory assignments in MB
         Int get_sample_name_mem = 512  # 256
+        Int collect_read_counts_mem = 2048
+        Int denoise_read_counts_mem = 2048
     }
 
     Int gatk_override_size = if defined(gatk_override) then ceil(size(gatk_override, "GB")) else 0
@@ -78,6 +80,7 @@ workflow callCollectReadCounts {
             format = format,
             sample_name = this_sample_name,
             runtime_params = standard_runtime,
+            memoryMB = collect_read_counts_mem
 	}
 
     if (defined(annotated_interval_list) || defined(read_count_panel_of_normals)) {
@@ -88,6 +91,7 @@ workflow callCollectReadCounts {
                 annotated_interval_list = annotated_interval_list,
                 count_panel_of_normals = read_count_panel_of_normals,
                 runtime_params = standard_runtime,
+                memoryMB = denoise_read_counts_mem
         }
     }
 
@@ -197,6 +201,7 @@ task DenoiseReadCounts {
         String sample_name
         File? annotated_interval_list
         File? count_panel_of_normals
+        Int? number_of_eigensamples
 
         Runtime runtime_params
         Int? memoryMB = 2048
@@ -219,6 +224,7 @@ task DenoiseReadCounts {
             -I ~{read_counts} \
             --denoised-copy-ratios ~{output_denoised_copy_ratios} \
             --standardized-copy-ratios ~{output_standardized_copy_ratios} \
+            ~{"--number-of-eigensamples " + number_of_eigensamples} \
             ~{"--annotated-intervals " + annotated_interval_list} \
             ~{"--count-panel-of-normals " + count_panel_of_normals}
 	>>>
