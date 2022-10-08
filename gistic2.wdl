@@ -1,3 +1,6 @@
+version development
+
+
 workflow Gistic2 {
     input {
         File seg_file

@@ -1,3 +1,5 @@
+version development
+
 import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/gistic2.wdl" as gistic2
 
 
