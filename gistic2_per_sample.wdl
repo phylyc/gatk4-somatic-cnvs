@@ -5,31 +5,64 @@ import "https://github.com/phylyc/gatk4-somatic-cnvs/raw/main/gistic2.wdl" as gi
 
 workflow Gistic2_per_Sample {
     input {
-        File seg_file
         File samples_table
-        File? markers_file
         File refgene_file
-        File cnv_files
+        File tumor_seg_file
+        File? normal_seg_file
+        File? markers_file
+        File? cnv_files
 
         Float amp_thresh = 0.3  # default 0.1
         Float del_thresh = 0.1
         Float qv_thresh = 0.1  # default 0.25
         Float cap = 1.5  # default 1.5
-        Float broad_length_cutoff = 0.5  # default 0.98
+        Float broad_length_cutoff = 0.7  # default 0.98
         Float conf_level = 0.9  # default 0.75
-        Int join_segment_size = 10
-        Int max_sample_segs = 20000
+        Int join_segment_size = 10   # default 4
+        Int max_sample_segs = 20000  # default 2500
         Int max_marker_spacing = 10000  # default 10000
         Int arm_peel = 1  # default 0
         Int do_gene_gistic = 1  # default 0
         Int remove_X = 1  # default 1
         String gene_collapse_method = "extreme"  # default "mean"
 
-        String docker = "broadinstitute/gatk"
+        String docker = "broadinstitute/gatk"  # needs to have a python3 version with pandas
 
         Int memoryMB = 2048
         Int disk_size = 12
         Int preemptible = 1
+    }
+
+    if (defined(normal_seg_file)) {
+        call gistic2.Gistic2 as normal_gistic2 {
+            input:
+                seg_file = select_first([normal_seg_file]),
+                markers_file = markers_file,
+                refgene_file = refgene_file,
+
+                amp_thresh = amp_thresh,
+                del_thresh = del_thresh,
+                qv_thresh = qv_thresh,
+                cap = cap,
+                broad_length_cutoff = broad_length_cutoff,
+                conf_level = conf_level,
+                join_segment_size = join_segment_size,
+                max_sample_segs = max_sample_segs,
+                max_marker_spacing = max_marker_spacing,
+                arm_peel = arm_peel,
+                do_gene_gistic = do_gene_gistic,
+                remove_X = remove_X,
+                gene_collapse_method = gene_collapse_method,
+
+                memoryMB = memoryMB,
+                disk_size = disk_size,
+                preemptible = preemptible
+        }
+
+        call generate_cnv_file {
+            input:
+                gistic_scores = normal_gistic2.gistic_scores
+        }
     }
 
     call get_samples_to_scatter {
@@ -41,18 +74,22 @@ workflow Gistic2_per_Sample {
     scatter (sample in get_samples_to_scatter.samples) {
         call aggregate_segs_by_patient {
             input:
-                seg_file = seg_file,
+                seg_file = tumor_seg_file,
                 samples_table = samples_table,
                 sample = sample,
                 docker = docker
         }
 
-        call gistic2.Gistic2 {
+        call gistic2.Gistic2 as tumor_gistic2 {
             input:
                 seg_file = aggregate_segs_by_patient.aggregated_seg_file,
                 markers_file = markers_file,
                 refgene_file = refgene_file,
-                cnv_files = cnv_files,
+                cnv_files = (
+                    if defined(cnv_files) then select_first([cnv_files])
+                    else if defined(normal_seg_file) then select_first([generate_cnv_file.cnv_files])
+                         else None
+                ),
 
                 amp_thresh = amp_thresh,
                 del_thresh = del_thresh,
@@ -78,9 +115,9 @@ workflow Gistic2_per_Sample {
         input:
             samples_table = samples_table,
             samples_to_scatter = get_samples_to_scatter.samples,
-            all_data_by_genes_array = Gistic2.all_data_by_genes,
-            all_thresholded_by_genes_array = Gistic2.all_thresholded_by_genes,
-            broad_values_by_arm_array = Gistic2.broad_values_by_arm,
+            all_data_by_genes_array = tumor_gistic2.all_data_by_genes,
+            all_thresholded_by_genes_array = tumor_gistic2.all_thresholded_by_genes,
+            broad_values_by_arm_array = tumor_gistic2.broad_values_by_arm,
             docker = docker
     }
 
@@ -88,6 +125,36 @@ workflow Gistic2_per_Sample {
         File all_data_by_genes = merge_gistic_output.all_data_by_genes
         File all_thresholded_by_genes = merge_gistic_output.all_thresholded_by_genes
         File broad_values_by_arm = merge_gistic_output.broad_values_by_arm
+    }
+}
+
+task generate_cnv_file {
+    input {
+        File gistic_scores
+        Int? diskSpaceGb = 5
+        Int? memoryMB = 8192
+    }
+
+    command <<<
+        ls
+        mv ~{gistic_scores} /src/gistic_output.txt
+        ls
+        cd /src
+        ls
+        Rscript /src/GisticFilterNormals.R
+        mv /src/conservative_filtered_gistic.txt /cromwell_root/conservative_filtered_gistic.txt
+        pwd
+        ls
+    >>>
+
+    output {
+        File cnv_files = 'conservative_filtered_gistic.txt'
+    }
+
+    runtime {
+        docker : "cheungatm/gistic2:v2"
+        memory: memoryMB + " MB"
+        disks: "local-disk " + diskSpaceGb + " HDD"
     }
 }
 
