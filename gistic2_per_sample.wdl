@@ -26,8 +26,9 @@ workflow Gistic2_per_Sample {
         String gene_collapse_method = "extreme"  # default "mean"
 
         String docker = "broadinstitute/gatk"
-        Int memoryMB = 510
-        Int disk_size = 10
+
+        Int memoryMB = 2048
+        Int disk_size = 12
         Int preemptible = 1
     }
 
@@ -99,6 +100,8 @@ task get_samples_to_scatter {
     File samples_to_scatter = "samples_to_scatter.txt"
 
     command <<<
+        touch ~{samples_to_scatter}
+
         python <<CODE
             import pandas as pd
 
@@ -124,7 +127,7 @@ task get_samples_to_scatter {
 
     runtime {
         docker: docker
-        bootDiskSizeGb: 1
+        bootDiskSizeGb: 12
         memory: 512 + " MB"
         disks: "local-disk " + 1 + " HDD"
         preemptible: 1
@@ -188,7 +191,7 @@ task aggregate_segs_by_patient {
 
     runtime {
         docker: docker
-        bootDiskSizeGb: 1
+        bootDiskSizeGb: 12
         memory: 1024 + " MB"
         disks: "local-disk " + 1 + " HDD"
         preemptible: 1
@@ -247,7 +250,7 @@ task merge_gistic_output {
 
     runtime {
         docker: docker
-        bootDiskSizeGb: 1
+        bootDiskSizeGb: 12
         memory: 1024 + " MB"
         disks: "local-disk " + 1 + " HDD"
         preemptible: 1
