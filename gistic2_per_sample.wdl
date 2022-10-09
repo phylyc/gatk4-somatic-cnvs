@@ -9,8 +9,8 @@ workflow Gistic2_per_Sample {
         File refgene_file
         File tumor_seg_file
         File? normal_seg_file
-        File? markers_file
-        File? cnv_files
+        String? markers_file
+        String? cnv_files
 
         Float amp_thresh = 0.3  # default 0.1
         Float del_thresh = 0.1
@@ -37,8 +37,8 @@ workflow Gistic2_per_Sample {
         call gistic2.Gistic2 as normal_gistic2 {
             input:
                 seg_file = select_first([normal_seg_file]),
-                markers_file = markers_file,
                 refgene_file = refgene_file,
+                markers_file = markers_file,
 
                 amp_thresh = amp_thresh,
                 del_thresh = del_thresh,
@@ -83,8 +83,8 @@ workflow Gistic2_per_Sample {
         call gistic2.Gistic2 as tumor_gistic2 {
             input:
                 seg_file = aggregate_segs_by_patient.aggregated_seg_file,
-                markers_file = markers_file,
                 refgene_file = refgene_file,
+                markers_file = markers_file,
                 cnv_files = (
                     if defined(cnv_files) then select_first([cnv_files])
                     else if defined(normal_seg_file) then select_first([generate_cnv_file.cnv_files])

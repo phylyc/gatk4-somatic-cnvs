@@ -5,8 +5,8 @@ workflow Gistic2 {
     input {
         File seg_file
         File refgene_file
-        File? markers_file
-        File? cnv_files
+        String? markers_file
+        String? cnv_files
 
         Float amp_thresh = 0.3
         Float del_thresh = 0.1
@@ -75,8 +75,8 @@ task tool_gistic2 {
     input {
         File seg_file
         File refgene_file
-        File markers_file = "./this_file_does_not_exist.txt"
-        File cnv_files = "./this_file_does_not_exist.txt"
+        String? markers_file = "./no_file.txt"
+        String? cnv_files = "./no_file.txt"
 
         Float amp_thresh = 0.1
         Float del_thresh = 0.1
@@ -110,7 +110,7 @@ task tool_gistic2 {
         remove_X: "0/1 flag indicating whether to remove data from the X chromosome before analysis.  (Recommended: 0)"
         conf_level: "Confidence level used to calculate region containing the driver.  (Recommended: 0.99)"
         join_segment_size: "Smallest number of markers to allow in segements from the segemented data.  Segements that contain a number of markers less than or equal to this number are joined to the adjacent segement, closest in copy number. (Recommended: 4)"
-        arm_peel: "0/1 flag indicating whether to perform arm-level peel off, wich helps spearte peaks and clean up noise.  (Recommended: 1)"
+        arm_peel: "0/1 flag indicating whether to perform arm-level peel off, wich helps separate peaks and clean up noise.  (Recommended: 1)"
         max_sample_segs: "Maximum number of segements allowed for a smaple in the input data.    Samples with more segments than this are excluded from the analysis. (Recommended: 2000)"
         do_gene_gistic: "0/1 flag indicating tht the gene GISTIC aglrithm should be used to calculate signficance of deletions at the gene level instead of a marker level. (Recommended: 1)"
         gene_collapse_method: "Method for reducing marker-level copy number data to the gene-level copy number data in the gene tables. Markers contained in the gene are used when available, otherwise the flanking marker or markers are used. Allowed values are mean, median, min, max or extreme. The extreme method chooses whichever of min or max is furthest from diploid. (Recommended: extreme)"
@@ -120,6 +120,13 @@ task tool_gistic2 {
 
     command {
         set -euo pipefail
+
+        if ~{markers_file == "./no_file.txt"} ; then
+            touch ~{markers_file}
+        fi
+        if ~{cnv_files == "./no_file.txt"} ; then
+            touch ~{cnv_files}
+        fi
 
         # The link_conf_wrapper creates generic symlinks to files that specify
         # the confidence level in their names.
