@@ -97,27 +97,27 @@ task get_samples_to_scatter {
         String docker
     }
 
-    File samples_to_scatter = "samples_to_scatter.txt"
+    String samples_to_scatter = "samples_to_scatter.txt"
 
     command <<<
-        touch ~{samples_to_scatter}
-
         python <<CODE
-            import pandas as pd
+        import pandas as pd
 
-            samples_table = pd.read_csv(~{samples_table}, sep="\t")
-            samples_to_scatter = []
-            for patient, sample_group in samples_table.groupby(by="Patient"):
-                if sample_group["Sample"].nunique() > 1:
-                    samples_to_scatter += list(sample_group["Sample"].to_numpy())
+        samples_table = pd.read_csv("~{samples_table}", sep="\t")
+        samples_to_scatter = []
+        for patient, sample_group in samples_table.groupby(by="Patient"):
+            if sample_group["Sample"].nunique() > 1:
+                samples_to_scatter += list(sample_group["Sample"].to_numpy())
 
-            # Ensure that the list is not empty by taking the first sample if it is:
-            if not len(samples_to_scatter):
-                samples_to_scatter = [samples_table.loc[0, "Sample"]]
+        # Ensure that the list is not empty by taking the first sample if it is:
+        if not len(samples_to_scatter):
+            samples_to_scatter = [samples_table.loc[0, "Sample"]]
 
-            with open("~{samples_to_scatter}", "w") as f:
-                for sample in samples_to_scatter:
-                    f.write(f"{sample}\n")
+        print(f"{len(samples_to_scatter)} samples to scatter: {samples_to_scatter}")
+
+        with open("~{samples_to_scatter}", "w") as f:
+            for sample in samples_to_scatter:
+                f.write(f"{sample}\n")
         CODE
     >>>
 
@@ -145,43 +145,43 @@ task aggregate_segs_by_patient {
         String docker
     }
 
-    File out_file = "aggregated_seg_file_" + sample + ".tsv"
+    String out_file = "aggregated_seg_file_" + sub(sample, " ", "+") + ".tsv"
 
     command <<<
         echo "Choosing ~{sample} as representative sample for its patient."
         echo "Aggregating copy ratios per segment over all samples per patient."
 
         python <<CODE
-            import numpy as np
-            import pandas as pd
+        import numpy as np
+        import pandas as pd
 
-            samples_table = pd.read_csv(~{samples_table}, sep="\t")
-            segs = pd.read_csv(~{seg_file}, sep="\t")
-            segs = segs.merge(samples_table, on="Sample")
-            segs["tCR"] = 2 ** (segs["Seg.CN"] + 1)
+        samples_table = pd.read_csv("~{samples_table}", sep="\t")
+        segs = pd.read_csv("~{seg_file}", sep="\t")
+        segs = segs.merge(samples_table, on="Sample")
+        segs["tCR"] = 2 ** (segs["Seg.CN"] + 1)
 
-            patient = samples_table.set_index("Sample").loc[~{sample}, "Patient"]
-            segs_to_aggregate = segs.loc[segs["Patient"] != patient]
-            representative_segs = segs.loc[segs["Sample"] == ~{sample}]
+        patient = samples_table.set_index("Sample").loc["~{sample}", "Patient"]
+        segs_to_aggregate = segs.loc[segs["Patient"] != patient]
+        representative_segs = segs.loc[segs["Sample"] == "~{sample}"]
 
-            agg_segs = segs_to_aggregate.groupby(
-                ["Chromosome", "Start Position", "End Position", "Patient"]
-            ).agg(
-                **{
-                    "tCR": pd.NamedAgg(column="tCR", aggfunc="mean"),
-                    # Num Markers were already adjusted during pre-processing.
-                    # If your data did not account for that, you need to do more here:
-                    "Num Markers": pd.NamedAgg(column="Num Markers", aggfunc="max")
-                }
-            ).reset_index()
-            agg_segs["Seg.CN"] = np.log2(agg_segs["tCR"]) - 1
-            agg_segs.drop_duplicates(inplace=True)
-            agg_segs.rename(columns={"Patient": "Sample"}, inplace=True)
+        agg_segs = segs_to_aggregate.groupby(
+            ["Chromosome", "Start Position", "End Position", "Patient"]
+        ).agg(
+            **{
+                "tCR": pd.NamedAgg(column="tCR", aggfunc="mean"),
+                # Num Markers were already adjusted during pre-processing.
+                # If your data did not account for that, you need to do more here:
+                "Num Markers": pd.NamedAgg(column="Num Markers", aggfunc="max")
+            }
+        ).reset_index()
+        agg_segs["Seg.CN"] = np.log2(agg_segs["tCR"]) - 1
+        agg_segs.drop_duplicates(inplace=True)
+        agg_segs.rename(columns={"Patient": "Sample"}, inplace=True)
 
-            gistic_input_columns = ["Sample", "Chromosome", "Start Position", "End Position", "Num Markers", "Seg.CN"]
-            agg_segs = pd.concat([agg_segs[gistic_input_columns], representative_segs[gistic_input_columns]])
-            agg_segs.sort_values(by=["Sample", "Chromosome", "Start Position"], inplace=True)
-            agg_segs.to_csv(~{out_file}, sep="\t", index=False)
+        gistic_input_columns = ["Sample", "Chromosome", "Start Position", "End Position", "Num Markers", "Seg.CN"]
+        agg_segs = pd.concat([agg_segs[gistic_input_columns], representative_segs[gistic_input_columns]])
+        agg_segs.sort_values(by=["Sample", "Chromosome", "Start Position"], inplace=True)
+        agg_segs.to_csv("~{out_file}", sep="\t", index=False)
         CODE
     >>>
 
@@ -211,34 +211,38 @@ task merge_gistic_output {
         String docker
     }
 
-    File all_data_by_genes_merged = "all_data_by_genes_merged.txt"
-    File all_thresholded_by_genes_merged = "all_thresholded_by_genes_merged.txt"
-    File broad_values_by_arm_merged = "broad_values_by_arm_merged.txt"
+    String all_data_by_genes_merged = "all_data_by_genes_merged.txt"
+    String all_thresholded_by_genes_merged = "all_thresholded_by_genes_merged.txt"
+    String broad_values_by_arm_merged = "broad_values_by_arm_merged.txt"
 
     command <<<
         python <<CODE
-            import pandas as pd
+        import pandas as pd
 
-            samples_table = pd.read_csv(~{samples_table}, sep="\t")
-            scatter_mask = samples_table["Sample"].isin(samples_to_scatter)
-            patient_to_sample = samples_table.loc[~scatter_mask].set_index("Patient")["Sample"].to_dict()
-            single_patients = list(patient_to_sample.keys())
+        samples_table = pd.read_csv("~{samples_table}", sep="\t")
+        samples_to_scatter = [~{sep="' " prefix("'", samples_to_scatter)}']
+        scatter_mask = samples_table["Sample"].isin(samples_to_scatter)
+        patient_to_sample = samples_table.loc[~scatter_mask].set_index("Patient")["Sample"].to_dict()
+        single_patients = list(patient_to_sample.keys())
 
-            def merge_tables(file_array, index_col, out_file):
-                to_concat = []
-                to_avg = []
-                for file in file_array:
-                    table = pd.read_csv(file, sep="\t", index_col=index_col)
-                    to_concat.append(table[[c for c in table.columns if c in samples_to_scatter]])
-                    to_avg.append(table[[c for c in table.columns if c in single_patients]])
-                avg = pd.concat(to_avg).groupby(level=0).mean()
-                to_concat.append(avg.rename(columns=patient_to_sample))
-                merged_table = pd.concat(to_concat, axis=1)
-                merged_table.to_csv(out_file, sep="\t")
+        def merge_tables(file_array, index_col, out_file):
+            to_concat = []
+            to_avg = []
+            for file in file_array:
+                table = pd.read_csv(file, sep="\t", index_col=index_col)
+                to_concat.append(table[[c for c in table.columns if c in samples_to_scatter]])
+                to_avg.append(table[[c for c in table.columns if c in single_patients]])
+            avg = pd.concat(to_avg).groupby(level=0).mean()
+            to_concat.append(avg.rename(columns=patient_to_sample))
+            merged_table = pd.concat(to_concat, axis=1)
+            merged_table.to_csv(out_file, sep="\t")
 
-            merge_tables(~{all_data_by_genes_array}, ["Gene Symbol", "Gene ID", "Cytoband"], ~{all_data_by_genes_merged})
-            merge_tables(~{all_thresholded_by_genes_array}, ["Gene Symbol", "Locus ID", "Cytoband"], ~{all_thresholded_by_genes_merged})
-            merge_tables(~{broad_values_by_arm_array}, "Chromosome Arm", ~{broad_values_by_arm_merged})
+        all_data_by_genes = [~{sep="' " prefix("'", all_data_by_genes_array)}']
+        all_thresholded_by_genes = [~{sep="' " prefix("'", all_thresholded_by_genes_array)}']
+        broad_values_by_arm = [~{sep="' " prefix("'", broad_values_by_arm_array)}']
+        merge_tables(all_data_by_genes, ["Gene Symbol", "Gene ID", "Cytoband"], "~{all_data_by_genes_merged}")
+        merge_tables(all_thresholded_by_genes, ["Gene Symbol", "Locus ID", "Cytoband"], "~{all_thresholded_by_genes_merged}")
+        merge_tables(broad_values_by_arm, "Chromosome Arm", "~{broad_values_by_arm_merged}")
         CODE
     >>>
 
