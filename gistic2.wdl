@@ -4,15 +4,15 @@ version development
 workflow Gistic2 {
     input {
         File seg_file
-        File? markers_file
         File refgene_file
-        File cnv_files
+        File? markers_file
+        File? cnv_files
 
         Float amp_thresh = 0.3
         Float del_thresh = 0.1
         Float qv_thresh = 0.1
         Float cap = 1.5
-        Float broad_length_cutoff = 0.5
+        Float broad_length_cutoff = 0.7
         Float conf_level = 0.9
         Int join_segment_size = 10
         Int max_sample_segs = 20000
@@ -74,9 +74,9 @@ workflow Gistic2 {
 task tool_gistic2 {
     input {
         File seg_file
-        File? markers_file
         File refgene_file
-        File cnv_files
+        File markers_file = "./this_file_does_not_exist.txt"
+        File cnv_files = "./this_file_does_not_exist.txt"
 
         Float amp_thresh = 0.1
         Float del_thresh = 0.1
@@ -84,8 +84,8 @@ task tool_gistic2 {
         Float cap = 1.5
         Float broad_length_cutoff = 0.98
         Float conf_level = 0.75
-        Int join_segment_size = 10
-        Int max_sample_segs = 20000
+        Int join_segment_size = 4
+        Int max_sample_segs = 2500  # This is a bit low by default
         Int max_marker_spacing = 10000
         Int arm_peel = 0
         Int do_gene_gistic = 0
@@ -97,6 +97,27 @@ task tool_gistic2 {
         Int preemptible = 1
     }
 
+    parameter_meta {
+        seg_file: "A six-column tab-delimited file containing the segmented data for all tumor/normal pairs in the pair set."
+        markers_file: "A three-column tab-delimited file identifying the names and positions all markers."
+        refgene_file: "Contains information about the location of genes and cytobands on a given build of the genome.  These files are created in MATLAB."
+        cnv_files: "A file specifying germ line CNVs to be excluded from the analysis."
+        amp_thresh: "Threshold for copy number amplifications.  Regions with a log2 ratio above this value are considered amplified. (Recommended: 0.1)"
+        del_thresh: "Threshold for copy number deletions.  Regions with a log2 ratio below the negative of this value are considered deletions.(Recommended: 0.1)"
+        qv_thresh: "Significance threshold for Q-values.  Regions with Q-values below this number are considered signficant. (Recommended: 0.1)"
+        cap: "Minimum and maximum cap values on analyzed data. Regions with a log2 ratio greater than the cap are set to the cap value; regions with a log2 ratio less than -cap value are set to -cap. (DEFAULT=1.5)"
+        broad_length_cutoff: "Threshold used to distinguish broad from focal events, given in units of fraction of chromsome arm.  (Recommended: 0.7)"
+        remove_X: "0/1 flag indicating whether to remove data from the X chromosome before analysis.  (Recommended: 0)"
+        conf_level: "Confidence level used to calculate region containing the driver.  (Recommended: 0.99)"
+        join_segment_size: "Smallest number of markers to allow in segements from the segemented data.  Segements that contain a number of markers less than or equal to this number are joined to the adjacent segement, closest in copy number. (Recommended: 4)"
+        arm_peel: "0/1 flag indicating whether to perform arm-level peel off, wich helps spearte peaks and clean up noise.  (Recommended: 1)"
+        max_sample_segs: "Maximum number of segements allowed for a smaple in the input data.    Samples with more segments than this are excluded from the analysis. (Recommended: 2000)"
+        do_gene_gistic: "0/1 flag indicating tht the gene GISTIC aglrithm should be used to calculate signficance of deletions at the gene level instead of a marker level. (Recommended: 1)"
+        gene_collapse_method: "Method for reducing marker-level copy number data to the gene-level copy number data in the gene tables. Markers contained in the gene are used when available, otherwise the flanking marker or markers are used. Allowed values are mean, median, min, max or extreme. The extreme method chooses whichever of min or max is furthest from diploid. (Recommended: extreme)"
+        memoryMB: "Integer value specifying the minimum memory requirements (in MB) for the virtual machine running the GISTIC2 task."
+        preemptible: "Integer value specifying the maximum number of times Cromwell should request a preemptible machine for this task before defaulting back to a non-preemptible one."
+    }
+
     command {
         set -euo pipefail
 
@@ -106,12 +127,12 @@ task tool_gistic2 {
             . \
             4 \
             ~{seg_file} \
-            ~{default="./this_file_does_not_exist.txt" markers_file} \
+            ~{markers_file} \
             ~{refgene_file} \
             ~{cnv_files} \
             ~{amp_thresh} \
             ~{del_thresh} \
-            ~{qv_thresh } \
+            ~{qv_thresh} \
             ~{cap} \
             ~{broad_length_cutoff} \
             ~{remove_X} \
