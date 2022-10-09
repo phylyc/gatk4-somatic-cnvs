@@ -75,8 +75,8 @@ task tool_gistic2 {
     input {
         File seg_file
         File refgene_file
-        String? markers_file = "./no_file.txt"
-        String? cnv_files = "./no_file.txt"
+        String? markers_file = "./no_markers_file.txt"
+        String? cnv_files = "./no_cnv_file.txt"
 
         Float amp_thresh = 0.1
         Float del_thresh = 0.1
@@ -121,11 +121,11 @@ task tool_gistic2 {
     command {
         set -euo pipefail
 
-        if [[ "~{markers_file}" == "./no_file.txt" ]] ; then
-            touch ~{markers_file}
+        if [[ "~{markers_file}" == "./no_markers_file.txt" ]] ; then
+            touch  ~{markers_file}
         fi
-        if [[ "~{cnv_files}" == "./no_file.txt" ]] ; then
-            touch ~{cnv_files}
+        if [[ "~{cnv_files}" == "./no_cnv_file.txt" ]] ; then
+            echo -e "None\t1\t1\t2\t1\t2" > ~{cnv_files}
         fi
 
         # The link_conf_wrapper creates generic symlinks to files that specify
