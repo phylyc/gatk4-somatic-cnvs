@@ -148,7 +148,7 @@ task generate_cnv_file {
     >>>
 
     output {
-        File cnv_files = 'conservative_filtered_gistic.txt'
+        File cnv_files = "conservative_filtered_gistic.txt"
     }
 
     runtime {

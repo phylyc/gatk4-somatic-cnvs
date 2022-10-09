@@ -121,10 +121,10 @@ task tool_gistic2 {
     command {
         set -euo pipefail
 
-        if ~{markers_file == "./no_file.txt"} ; then
+        if [[ "~{markers_file}" == "./no_file.txt" ]] ; then
             touch ~{markers_file}
         fi
-        if ~{cnv_files == "./no_file.txt"} ; then
+        if [[ "~{cnv_files}" == "./no_file.txt" ]] ; then
             touch ~{cnv_files}
         fi
 
