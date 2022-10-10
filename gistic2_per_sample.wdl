@@ -275,6 +275,8 @@ task merge_gistic_output {
         Array[File] broad_values_by_arm_array
 
         String docker
+        Int memoryMB = 16384
+        Int disk_spaceGB = 10
     }
 
     String all_data_by_genes_merged = "all_data_by_genes_merged.txt"
@@ -324,8 +326,8 @@ task merge_gistic_output {
     runtime {
         docker: docker
         bootDiskSizeGb: 12
-        memory: 2048 + " MB"
-        disks: "local-disk " + 4 + " HDD"
+        memory: memoryMB + " MB"
+        disks: "local-disk " + disk_spaceGB + " HDD"
         preemptible: 1
         maxRetries: 1
         cpu: 1
