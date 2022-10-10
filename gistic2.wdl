@@ -22,8 +22,8 @@ workflow Gistic2 {
         Int remove_X = 1
         String gene_collapse_method = "extreme"
 
-        Int memoryMB = 2048
-        Int disk_size = 1
+        Int memoryMB = 10240
+        Int disk_size = 10
         Int preemptible = 1
     }
 
@@ -92,7 +92,7 @@ task tool_gistic2 {
         Int remove_X = 1
         String gene_collapse_method = "mean"
 
-        Int memoryMB = 2096
+        Int memoryMB = 10240
         Int disk_size = 10
         Int preemptible = 1
     }

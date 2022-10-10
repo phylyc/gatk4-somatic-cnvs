@@ -28,7 +28,7 @@ workflow Gistic2_per_Sample {
 
         String docker = "broadinstitute/gatk"  # needs to have a python3 version with pandas
 
-        Int memoryMB = 2048
+        Int memoryMB = 10240
         Int disk_size = 12
         Int preemptible = 1
     }
@@ -258,8 +258,8 @@ task aggregate_segs_by_patient {
     runtime {
         docker: docker
         bootDiskSizeGb: 12
-        memory: 1024 + " MB"
-        disks: "local-disk " + 1 + " HDD"
+        memory: 2048 + " MB"
+        disks: "local-disk " + 2 + " HDD"
         preemptible: 1
         maxRetries: 1
         cpu: 1
@@ -321,8 +321,8 @@ task merge_gistic_output {
     runtime {
         docker: docker
         bootDiskSizeGb: 12
-        memory: 1024 + " MB"
-        disks: "local-disk " + 1 + " HDD"
+        memory: 2048 + " MB"
+        disks: "local-disk " + 4 + " HDD"
         preemptible: 1
         maxRetries: 1
         cpu: 1
