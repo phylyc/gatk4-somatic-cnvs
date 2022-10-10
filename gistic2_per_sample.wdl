@@ -38,7 +38,6 @@ workflow Gistic2_per_Sample {
             input:
                 seg_file = select_first([normal_seg_file]),
                 refgene_file = refgene_file,
-                markers_file = markers_file,
 
                 amp_thresh = amp_thresh,
                 del_thresh = del_thresh,
