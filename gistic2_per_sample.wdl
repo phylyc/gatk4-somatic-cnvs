@@ -9,8 +9,8 @@ workflow Gistic2_per_Sample {
         File refgene_file
         File tumor_seg_file
         File? normal_seg_file
-        String? markers_file
-        String? cnv_files
+        File? markers_file
+        File? cnv_files
 
         Float amp_thresh = 0.3  # default 0.1
         Float del_thresh = 0.1
@@ -87,8 +87,8 @@ workflow Gistic2_per_Sample {
                 markers_file = markers_file,
                 cnv_files = (
                     if defined(cnv_files) then select_first([cnv_files])
-                    else if defined(normal_seg_file) then select_first([generate_cnv_file.cnv_files])
-                         else None
+                    else (if defined(normal_seg_file) then select_first([generate_cnv_file.cnv_files])
+                         else None)
                 ),
 
                 amp_thresh = amp_thresh,

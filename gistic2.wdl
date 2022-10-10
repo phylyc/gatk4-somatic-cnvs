@@ -5,8 +5,8 @@ workflow Gistic2 {
     input {
         File seg_file
         File refgene_file
-        String? markers_file
-        String? cnv_files
+        File? markers_file
+        File? cnv_files
 
         Float amp_thresh = 0.3
         Float del_thresh = 0.1
@@ -75,8 +75,8 @@ task tool_gistic2 {
     input {
         File seg_file
         File refgene_file
-        String? markers_file = "./no_markers_file.txt"
-        String? cnv_files = "./no_cnv_file.txt"
+        File? markers_file
+        File? cnv_files
 
         Float amp_thresh = 0.1
         Float del_thresh = 0.1
@@ -121,11 +121,8 @@ task tool_gistic2 {
     command {
         set -euo pipefail
 
-        if [[ "~{markers_file}" == "./no_markers_file.txt" ]] ; then
-            touch  ~{markers_file}
-        fi
-        if [[ "~{cnv_files}" == "./no_cnv_file.txt" ]] ; then
-            echo -e "None\t1\t1\t2\t1\t2" > ~{cnv_files}
+        if ~{!defined(cnv_files)} ; then
+            echo -e "foo\t1\t1\t100\t1\t200" > dummy_cnv_file.txt
         fi
 
         # The link_conf_wrapper creates generic symlinks to files that specify
@@ -134,9 +131,9 @@ task tool_gistic2 {
             . \
             4 \
             ~{seg_file} \
-            ~{markers_file} \
+            ~{default="./this_file_does_not_exist.txt" markers_file} \
             ~{refgene_file} \
-            ~{cnv_files} \
+            ~{default="dummy_cnv_file.txt" cnv_files} \
             ~{amp_thresh} \
             ~{del_thresh} \
             ~{qv_thresh} \
