@@ -286,10 +286,13 @@ task merge_gistic_output {
         import pandas as pd
 
         samples_table = pd.read_csv("~{samples_table}", sep="\t")
-        samples_to_scatter = [~{sep="' " prefix("'", samples_to_scatter)}']
+        samples_to_scatter = ['~{sep="', '" samples_to_scatter}']
         scatter_mask = samples_table["Sample"].isin(samples_to_scatter)
         patient_to_sample = samples_table.loc[~scatter_mask].set_index("Patient")["Sample"].to_dict()
         single_patients = list(patient_to_sample.keys())
+
+        print(f"{len(samples_to_scatter)} samples from scatter: {samples_to_scatter}")
+        print(f"{len(single_patients)} other patients: {single_patients}")
 
         def merge_tables(file_array, index_col, out_file):
             to_concat = []
@@ -298,14 +301,14 @@ task merge_gistic_output {
                 table = pd.read_csv(file, sep="\t", index_col=index_col)
                 to_concat.append(table[[c for c in table.columns if c in samples_to_scatter]])
                 to_avg.append(table[[c for c in table.columns if c in single_patients]])
-            avg = pd.concat(to_avg).groupby(level=0).mean()
+            avg = pd.concat(to_avg).groupby(level=index_col).mean()
             to_concat.append(avg.rename(columns=patient_to_sample))
             merged_table = pd.concat(to_concat, axis=1)
             merged_table.to_csv(out_file, sep="\t")
 
-        all_data_by_genes = [~{sep="' " prefix("'", all_data_by_genes_array)}']
-        all_thresholded_by_genes = [~{sep="' " prefix("'", all_thresholded_by_genes_array)}']
-        broad_values_by_arm = [~{sep="' " prefix("'", broad_values_by_arm_array)}']
+        all_data_by_genes = ['~{sep="', '" all_data_by_genes_array}']
+        all_thresholded_by_genes = ['~{sep="', '" all_thresholded_by_genes_array}']
+        broad_values_by_arm = ['~{sep="', '" broad_values_by_arm_array}']
         merge_tables(all_data_by_genes, ["Gene Symbol", "Gene ID", "Cytoband"], "~{all_data_by_genes_merged}")
         merge_tables(all_thresholded_by_genes, ["Gene Symbol", "Locus ID", "Cytoband"], "~{all_thresholded_by_genes_merged}")
         merge_tables(broad_values_by_arm, "Chromosome Arm", "~{broad_values_by_arm_merged}")
