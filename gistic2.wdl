@@ -9,13 +9,13 @@ workflow Gistic2 {
         File? cnv_files
 
         Float amp_thresh = 0.3
-        Float del_thresh = 0.1
+        Float del_thresh = 0.3
         Float qv_thresh = 0.1
         Float cap = 1.5
         Float broad_length_cutoff = 0.7
         Float conf_level = 0.9
-        Int join_segment_size = 10
-        Int max_sample_segs = 20000
+        Int join_segment_size = 4
+        Int max_sample_segs = 25000
         Int max_marker_spacing = 10000
         Int arm_peel = 1
         Int do_gene_gistic = 1
@@ -59,15 +59,29 @@ workflow Gistic2 {
         File all_thresholded_by_genes = tool_gistic2.all_thresholded_by_genes
         File amp_genes = tool_gistic2.amp_genes
         File amp_qplot_png = tool_gistic2.amp_qplot_png
+        File amp_qplot_pdf = tool_gistic2.amp_qplot_pdf
+        File array_list = tool_gistic2.array_list
         File arraylistfile = tool_gistic2.arraylistfile
-        File broad_values_by_arm = tool_gistic2.broad_values_by_arm
+        File broad_copy_number = tool_gistic2.broad_copy_number
+        File broad_data_by_genes = tool_gistic2.broad_data_by_genes
         File broad_significance_results = tool_gistic2.broad_significance_results
+        File broad_values_by_arm = tool_gistic2.broad_values_by_arm
         File del_genes = tool_gistic2.del_genes
         File del_qplot_png = tool_gistic2.del_qplot_png
+        File del_qplot_pdf = tool_gistic2.del_qplot_pdf
+        File focal_copy_number = tool_gistic2.focal_copy_number
+        File focal_data_by_genes = tool_gistic2.focal_data_by_genes
+        File freqarms_vs_ngenes = tool_gistic2.freqarms_vs_ngenes
         File gistic_inputs = tool_gistic2.gistic_inputs
         File gistic_version = tool_gistic2.gistic_version
+        File segmented_copy_number_pdf = tool_gistic2.segmented_copy_number_pdf
         File segmented_copy_number_png = tool_gistic2.segmented_copy_number_png
+        File regions_track = tool_gistic2.regions_track
+        File sample_cutoffs = tool_gistic2.sample_cutoffs
+        File sample_seg_counts = tool_gistic2.sample_seg_counts
         File gistic_scores = tool_gistic2.gistic_scores
+        File table_amp = tool_gistic2.table_amp
+        File table_del = tool_gistic2.table_del
     }
 }
 
@@ -85,7 +99,7 @@ task tool_gistic2 {
         Float broad_length_cutoff = 0.98
         Float conf_level = 0.75
         Int join_segment_size = 4
-        Int max_sample_segs = 2500  # This is a bit low by default
+        Int max_sample_segs = 2500  # This is a bit low by default for newer segmentation methods
         Int max_marker_spacing = 10000
         Int arm_peel = 0
         Int do_gene_gistic = 0
@@ -122,7 +136,7 @@ task tool_gistic2 {
         set -euo pipefail
 
         if ~{!defined(cnv_files)} ; then
-            echo -e "foo\t1\t1\t100\t1\t200" > dummy_cnv_file.txt
+            echo -e "foo\t1\t1\t1\t1\t2" > dummy_cnv_file.txt
         fi
 
         # The link_conf_wrapper creates generic symlinks to files that specify
@@ -156,15 +170,29 @@ task tool_gistic2 {
         File all_thresholded_by_genes = "all_thresholded.by_genes.txt"
         File amp_genes = "amp_genes.txt"
         File amp_qplot_png = "amp_qplot.png"
+        File amp_qplot_pdf = "amp_qplot.pdf"
+        File array_list = "array_list.txt"
         File arraylistfile = "arraylistfile.txt"
+        File broad_copy_number = "broad_copy_number.png"
+        File broad_data_by_genes = "broad_data_by_genes.txt"
         File broad_significance_results = "broad_significance_results.txt"
         File broad_values_by_arm = "broad_values_by_arm.txt"
         File del_genes = "del_genes.txt"
         File del_qplot_png = "del_qplot.png"
+        File del_qplot_pdf = "del_qplot.pdf"
+        File focal_copy_number = "focal_copy_number.png"
+        File focal_data_by_genes = "focal_data_by_genes.txt"
+        File freqarms_vs_ngenes = "freqarms_vs_ngenes.pdf"
         File gistic_inputs = "gisticInputs.txt"
         File gistic_version = "gisticVersion.txt"
+        File segmented_copy_number_pdf = "raw_copy_number.pdf"
         File segmented_copy_number_png = "raw_copy_number.png"
+        File regions_track = "regions_track.bed"
+        File sample_cutoffs = "sample_cutoffs.txt"
+        File sample_seg_counts = "sample_seg_counts.txt"
         File gistic_scores = "scores.gistic"
+        File table_amp = "table_amp.txt"
+        File table_del = "table_del.txt"
     }
 
     runtime {
